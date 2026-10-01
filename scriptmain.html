@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes dépenses</title>
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#16252e;--mute:#62747f;--line:#d5dee4;--accent:#0b6e6e;--over:#b3361f;--soft:#dcecec;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181d;--card:#18232a;--ink:#e6eef2;--mute:#8da0ab;--line:#2a3a43;--accent:#4fc1b8;--over:#ff8a73;--soft:#1f3a3b;--on:#10181d}}
+:root[data-theme="dark"]{--bg:#10181d;--card:#18232a;--ink:#e6eef2;--mute:#8da0ab;--line:#2a3a43;--accent:#4fc1b8;--over:#ff8a73;--soft:#1f3a3b;--on:#10181d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0}h2{font-size:1.05rem;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.top input{width:auto}
+.total{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;color:var(--accent);margin:4px 0 8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:.88rem}
+.stats b{display:block;font-size:1.05rem}
+.mute,small{color:var(--mute)}
+.bar{height:8px;background:var(--soft);border-radius:6px;overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.over .bar i{background:var(--over)}.over .ph span{color:var(--over)}
+.pl{padding:10px 0;border-top:1px solid var(--line)}.pl:first-of-type{border-top:0}
+.ph{display:flex;justify-content:space-between;gap:8px;font-size:.93rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}.row>*{flex:1 1 130px}
+label{display:block;font-size:.82rem;color:var(--mute);margin-bottom:3px}
+input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{font:inherit;border:0;border-radius:8px;padding:9px 14px;background:var(--accent);color:var(--on);cursor:pointer;font-weight:600}
+button.g{background:transparent;color:var(--mute);padding:4px 8px;font-weight:400}
+button.g:hover{color:var(--over)}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}li:first-child{border-top:0}
+li .d{flex:1;min-width:0}li .d b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amt{font-weight:700;white-space:nowrap}
+.hint{background:var(--soft);border-radius:8px;padding:8px 10px;font-size:.88rem;margin-bottom:10px;display:none}
+.alerte{color:var(--over);font-size:.9rem;margin:8px 0 0}
+.pile{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.pile .n{font-size:1.8rem;font-weight:800;min-width:2ch;text-align:center}
+.ab input{width:96px}.rg{display:grid;grid-template-columns:1fr 96px 96px;gap:8px;align-items:center;font-size:.9rem;margin-bottom:6px}
+details summary{cursor:pointer;font-weight:600;margin-bottom:8px}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><h1>Mes dépenses</h1><input type="month" id="mois" aria-label="Mois affiché"></div>
+ 
+<section class="card"><div class="mute">Total du mois, abonnements compris</div><div class="total" id="total"></div><div class="stats" id="stats"></div></section>
+ 
+<section class="card"><h2>Mes plaisirs</h2><div id="pls"></div></section>
+ 
+<section class="card">
+  <h2>Ajouter une dépense</h2>
+  <div class="hint" id="hint"></div>
+  <div class="row">
+    <div><label for="montant">Montant (€)</label><input type="number" id="montant" min="0" step="0.01" inputmode="decimal"></div>
+    <div><label for="poste">Poste</label><select id="poste"></select></div>
+    <div><label for="date">Date</label><input type="date" id="date"></div>
+  </div>
+  <div class="row">
+    <div style="flex:3 1 200px"><label for="desc" id="ldesc">Description</label><input type="text" id="desc"></div>
+    <div id="wtype" style="display:none"><label for="type">Type d'achat</label><select id="type"><option>Réassort</option><option>Envie</option></select></div>
+    <div id="wnote"><label for="note">Plaisir (1 à 5)</label><select id="note"><option value="0">Pas encore noté</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+  </div>
+  <button id="ajout">Ajouter</button>
+  <div class="alerte" id="alerte"></div>
+</section>
+ 
+<section class="card"><h2>Ce que mes données m'apprennent</h2><div id="appr"></div></section>
+ 
+<section class="card"><h2>Liste d'envies bijoux</h2>
+  <div class="row"><input type="text" id="wtxt" placeholder="Pièce repérée en boutique" aria-label="Pièce repérée"><button id="wadd" style="flex:0 0 auto">Noter l'envie</button></div>
+  <ul id="wl"></ul></section>
+ 
+<section class="card"><h2>Pile à lire</h2>
+  <div class="pile"><button class="g" id="pm" aria-label="Un livre lu">−</button><span class="n" id="pn"></span><button class="g" id="pp" aria-label="Un livre ajouté">+</button>
+  <span><label for="seuil" style="display:inline">Seuil pour racheter</label> <input type="number" id="seuil" min="0" style="width:70px"></span></div>
+  <p id="pmsg" class="mute" style="margin:8px 0 0"></p></section>
+ 
+<section class="card"><h2>Mes abonnements</h2><ul id="abl" class="ab"></ul>
+  <div class="row" style="margin:10px 0 0"><input type="text" id="an" placeholder="Nouvel abonnement" aria-label="Nom"><input type="number" id="am" min="0" step="0.01" placeholder="€ par mois" aria-label="Montant"><button id="aadd" style="flex:0 0 auto">Ajouter</button></div></section>
+ 
+<section class="card"><details><summary>Règles par poste de plaisir</summary>
+  <div class="rg mute"><span></span><span>Plafond €</span><span>Achats max</span></div><div id="rg"></div>
+  <small>Laisse vide pour ne fixer aucune limite. Les ongles restent un poste préservé.</small></details></section>
+ 
+<section class="card"><div class="top" style="margin:0 0 6px"><h2 style="margin:0">Dépenses du mois</h2><button class="g" id="csv">Exporter en CSV</button></div><ul id="liste"></ul></section>
+</main>
+<script>
+var KEY="depenses-v2";
+var PL=["Lattes","Beauté","Snacks","Bijoux","Papeterie","Livres","Ongles"],FX=["Loyer","Courses"],ALL=FX.concat(PL,["Autre"]);
+var D={items:[],rules:{"Beauté":{cap:0,max:3},"Bijoux":{cap:0,max:1}},wish:[],pile:{n:0,seuil:3},
+abos:[["Salle de sport",31.96],["App de chinois",10.99],["Téléphone et wifi",44.99],["Spotify Duo",8.6],["Transports (ma part)",30]]};
+try{var s=localStorage.getItem(KEY);if(s)D=JSON.parse(s);else{var o=localStorage.getItem("depenses-v1");if(o){var v=JSON.parse(o);D.items=(v.items||[]).map(function(x){return{id:x.id,montant:x.montant,poste:x.cat==="Logement"?"Loyer":x.cat==="Courses"?"Courses":"Autre",date:x.date,note:0,type:"",desc:x.note||""}})}}}catch(e){}
+var $=function(i){return document.getElementById(i)};
+var eur=function(n){return n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"})};
+var esc=function(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var save=function(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+var sum=function(l){return l.reduce(function(a,x){return a+x.montant},0)};
+var abTot=function(){return D.abos.reduce(function(a,x){return a+x[1]},0)};
+var inM=function(m){return D.items.filter(function(x){return x.date.slice(0,7)===m})};
+var pm=function(m,k){var p=m.split("-").map(Number),y=p[0],mo=p[1]-k;while(mo<1){mo+=12;y--}return y+"-"+String(mo).padStart(2,"0")};
+var today=new Date().toISOString().slice(0,10);
+$("mois").value=today.slice(0,7);$("date").value=today;
+$("poste").innerHTML=ALL.map(function(p){return"<option>"+p+"</option>"}).join("");
+var HINTS={Snacks:"Et si tu le préparais à la maison ? Cookies, brioches, barres de céréales ou crackers, en lot pour la semaine.",Lattes:"Latte maison : un peu de sirop et ta jolie tasse.",Beauté:"Qu'est-ce qui est terminé ou qui te manque vraiment ? Écris le besoin dans la description.",Bijoux:"Pense à la liste d'envies plus bas : attends quelques jours avant de décider.",Papeterie:"Regarde d'abord ce que tu as déjà dans ton bureau.",Livres:"Regarde ta pile à lire plus bas, et pense à la médiathèque pour les envies en plus."};
+function onPoste(){var p=$("poste").value,h=$("hint");h.style.display=HINTS[p]?"block":"none";h.textContent=HINTS[p]||"";
+$("wtype").style.display=p==="Beauté"?"block":"none";$("wnote").style.display=PL.indexOf(p)>-1?"block":"none";
+$("ldesc").textContent=p==="Beauté"?"Besoin (obligatoire pour la beauté)":"Description"}
+$("poste").onchange=onPoste;onPoste();
+function avgNote(l){var n=l.filter(function(x){return x.note>0});return n.length?n.reduce(function(a,x){return a+x.note},0)/n.length:0}
+function render(){
+ var m=$("mois").value,its=inM(m),ab=abTot();
+ var fx=sum(its.filter(function(x){return FX.indexOf(x.poste)>-1})),pl=sum(its.filter(function(x){return PL.indexOf(x.poste)>-1})),au=sum(its.filter(function(x){return x.poste==="Autre"}));
+ $("total").textContent=eur(fx+pl+au+ab);
+ $("stats").innerHTML="<div><b>"+eur(fx+au)+"</b>Fixes et divers</div><div><b>"+eur(ab)+"</b>Abonnements</div><div><b>"+eur(pl)+"</b>Plaisirs</div>";
+ $("pls").innerHTML=PL.map(function(p){
+  var l=its.filter(function(x){return x.poste===p}),s=sum(l),c=l.length,r=D.rules[p]||{},cap=r.cap>0,mx=r.max>0;
+  var ov=p!=="Ongles"&&((cap&&s>r.cap)||(mx&&c>r.max)),pct=cap?Math.min(100,s/r.cap*100):0;
+  var an=avgNote(l),extra="";
+  if(p==="Beauté"){var re=l.filter(function(x){return x.type==="Réassort"}).length;extra=" · "+re+" réassort, "+(c-re)+" envie"}
+  var info=c+(mx?" / "+r.max:"")+" achat"+(c>1?"s":"")+extra+(an?" · plaisir "+an.toFixed(1).replace(".",",")+"/5":"")+(p==="Ongles"?" · poste préservé":"");
+  return'<div class="pl'+(ov?" over":"")+'"><div class="ph"><b>'+p+'</b><span>'+eur(s)+(cap?" / "+eur(r.cap):"")+'</span></div>'+(cap?'<div class="bar"><i style="width:'+pct+'%"></i></div>':"")+'<small>'+info+'</small></div>'}).join("");
+ $("liste").innerHTML=its.length?its.slice().sort(function(a,b){return b.date.localeCompare(a.date)}).map(function(x){
+  return'<li><div class="d"><b>'+(esc(x.desc)||x.poste)+'</b><small>'+x.poste+" · "+new Date(x.date).toLocaleDateString("fr-FR")+(x.type?" · "+x.type:"")+(x.note?" · "+"★".repeat(x.note):"")+'</small></div><span class="amt">'+eur(x.montant)+'</span><button class="g" data-id="'+x.id+'">Supprimer</button></li>'}).join(""):'<p class="mute" style="margin:0">Aucune dépense ce mois-ci. Ajoute la première plus haut.</p>';
+ appr(m);
+}
+function appr(m){
+ var ms=[0,1,2].map(function(k){return inM(pm(m,k))}).filter(function(l){return l.length}),h="";
+ if(ms.length){var mo=ms.reduce(function(a,l){return a+sum(l)},0)/ms.length;
+  h+="<p style='margin:0 0 8px'>Prévision pour le mois suivant : <b>"+eur(mo+abTot())+"</b>, soit "+eur(abTot())+" d'abonnements et environ "+eur(mo)+" de dépenses habituelles (moyenne sur "+ms.length+" mois renseigné"+(ms.length>1?"s":"")+").</p>"}
+ else h+="<p class='mute' style='margin:0 0 8px'>Ajoute quelques dépenses pour obtenir une prévision du mois suivant.</p>";
+ var tips=PL.filter(function(p){var l=D.items.filter(function(x){return x.poste===p&&x.note>0});return p!=="Ongles"&&l.length>=2&&avgNote(l)<=2.5}).map(function(p){return"<li style='padding:6px 0'>"+p+" : tes achats te plaisent peu en moyenne, c'est le premier poste à réduire ou à remplacer.</li>"});
+ var best=PL.map(function(p){var l=D.items.filter(function(x){return x.poste===p&&x.note>0});return[p,avgNote(l),l.length]}).filter(function(a){return a[2]>=2&&a[1]>=4});
+ h+=tips.length?"<ul>"+tips.join("")+"</ul>":"<p class='mute' style='margin:0'>Les pistes d'économies apparaîtront quand tu auras noté au moins deux achats par poste.</p>";
+ if(best.length)h+="<p style='margin:8px 0 0'>Tes plaisirs les mieux notés : "+best.map(function(a){return a[0]}).join(", ")+". Ils méritent leur place.</p>";
+ $("appr").innerHTML=h}
+function renderWish(){var now=Date.now();
+ $("wl").innerHTML=D.wish.length?D.wish.map(function(w){var d=Math.floor((now-w.id)/864e5);
+  return'<li><div class="d"><b>'+esc(w.txt)+'</b><small>'+(d>=3?"Notée il y a "+d+" j, prête à décider":"Patiente encore "+(3-d)+" j")+'</small></div><button data-w="'+w.id+'" data-a="buy">Je l\'achète</button><button class="g" data-w="'+w.id+'" data-a="del">Plus envie</button></li>'}).join(""):'<li class="mute">Aucune envie notée pour le moment.</li>'}
+function renderPile(){$("pn").textContent=D.pile.n;$("seuil").value=D.pile.seuil;
+ $("pmsg").textContent=D.pile.n>D.pile.seuil?"Ta pile dépasse ton seuil : lis un livre avant d'en racheter, ou passe par la médiathèque.":"Ta pile est sous le seuil : tu peux t'offrir un livre."}
+function renderAbos(){$("abl").innerHTML=D.abos.map(function(a,i){return'<li><div class="d"><b>'+esc(a[0])+'</b></div><input type="number" step="0.01" min="0" value="'+a[1]+'" data-i="'+i+'" aria-label="Montant"> <button class="g" data-di="'+i+'">Retirer</button></li>'}).join("")}
+function renderRules(){$("rg").innerHTML=PL.filter(function(p){return p!=="Ongles"}).map(function(p){var r=D.rules[p]||{};return'<div class="rg"><span>'+p+'</span><input type="number" min="0" step="1" data-r="'+p+'" data-k="cap" value="'+(r.cap||"")+'" aria-label="Plafond '+p+'"><input type="number" min="0" step="1" data-r="'+p+'" data-k="max" value="'+(r.max||"")+'" aria-label="Achats max '+p+'"></div>'}).join("")}
+$("ajout").onclick=function(){
+ var v=parseFloat($("montant").value),p=$("poste").value,d=$("date").value,ds=$("desc").value.trim(),al=$("alerte");al.textContent="";
+ if(!(v>0)||!d){$("montant").focus();return}
+ if(p==="Beauté"&&!ds){al.textContent="Note le besoin dans la description avant de valider un achat beauté.";$("desc").focus();return}
+ D.items.push({id:Date.now(),montant:v,poste:p,date:d,note:PL.indexOf(p)>-1?+$("note").value:0,type:p==="Beauté"?$("type").value:"",desc:ds});
+ if(p==="Livres")D.pile.n++;
+ save();$("montant").value="";$("desc").value="";$("note").value="0";$("mois").value=d.slice(0,7);
+ var l=inM(d.slice(0,7)).filter(function(x){return x.poste===p}),r=D.rules[p]||{};
+ if(p!=="Ongles"){if(r.cap>0&&sum(l)>r.cap)al.textContent="Plafond de "+p+" dépassé ce mois-ci.";else if(r.max>0&&l.length>r.max)al.textContent="Tu as dépassé le nombre d'achats prévu pour "+p+" ce mois-ci."}
+ render();renderPile()};
+$("liste").onclick=function(e){var id=e.target.getAttribute("data-id");if(!id)return;D.items=D.items.filter(function(x){return String(x.id)!==id});save();render()};
+$("wadd").onclick=function(){var t=$("wtxt").value.trim();if(!t)return;D.wish.push({id:Date.now(),txt:t});$("wtxt").value="";save();renderWish()};
+$("wl").onclick=function(e){var id=e.target.getAttribute("data-w"),a=e.target.getAttribute("data-a");if(!id)return;
+ var w=D.wish.filter(function(x){return String(x.id)===id})[0];D.wish=D.wish.filter(function(x){return String(x.id)!==id});save();renderWish();
+ if(a==="buy"&&w){$("poste").value="Bijoux";onPoste();$("desc").value=w.txt;$("montant").focus()}};
+$("pm").onclick=function(){D.pile.n=Math.max(0,D.pile.n-1);save();renderPile()};
+$("pp").onclick=function(){D.pile.n++;save();renderPile()};
+$("seuil").onchange=function(){D.pile.seuil=Math.max(0,parseInt(this.value)||0);save();renderPile()};
+$("abl").onchange=function(e){var i=e.target.getAttribute("data-i");if(i===null)return;D.abos[i][1]=parseFloat(e.target.value)||0;save();render()};
+$("abl").onclick=function(e){var i=e.target.getAttribute("data-di");if(i===null)return;D.abos.splice(i,1);save();renderAbos();render()};
+$("aadd").onclick=function(){var n=$("an").value.trim(),v=parseFloat($("am").value);if(!n||!(v>=0))return;D.abos.push([n,v]);$("an").value="";$("am").value="";save();renderAbos();render()};
+$("rg").onchange=function(e){var p=e.target.getAttribute("data-r");if(!p)return;D.rules[p]=D.rules[p]||{cap:0,max:0};D.rules[p][e.target.getAttribute("data-k")]=parseFloat(e.target.value)||0;save();render()};
+$("mois").onchange=render;
+$("csv").onclick=function(){var rows=["Date;Poste;Description;Type;Plaisir;Montant"].concat(D.items.map(function(x){return[x.date,x.poste,'"'+(x.desc||"").replace(/"/g,'""')+'"',x.type,x.note||"",String(x.montant).replace(".",",")].join(";")}));
+ var a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent("\ufeff"+rows.join("\n"));a.download="depenses.csv";a.click()};
+renderWish();renderPile();renderAbos();renderRules();render();
+</script>
+</body>
+</html>
